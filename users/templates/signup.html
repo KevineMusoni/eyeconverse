@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EyeConverse</title>
+
+    <link rel="shortcut icon" href="{% static 'images/icon.png' %}" type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header class="header" data-header>
+        <div class="container">
+            <a href="{% url 'index' %}" class="logo" style="font-size: 18px; font-weight: 550;">
+                <img src="{% static 'images/icon.png' %}" width="50" height="50" alt="EyeConverse Logo">
+                EyeConverse
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <section class="signup-section">
+            <div class="container">
+                <div class="signup-box">
+                    <h2 class="h2">Sign Up</h2>
+                    
+                    <!-- Display Messages -->
+                    {% if messages %}
+                    <div>
+                        {% for message in messages %}
+                            {% if message.tags == "success" %}
+                                <div style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                                    {{ message }}
+                                </div>
+                            {% elif message.tags == "error" %}
+                                <div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                                    {{ message }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'signup' %}">
+                        {% csrf_token %}
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+
+                        <button type="submit" class="btn has-before">Sign Up</button>
+                    </form>
+
+                    <p class="signup-prompt">
+                        Already have an account? <a href="{% url 'login' %}">Log In</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

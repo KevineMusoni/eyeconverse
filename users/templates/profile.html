@@ -1,0 +1,372 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EyeConverse</title>
+
+    <link rel="shortcut icon" href="{% static 'images/icon.png' %}" type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/keyboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    
+    <!-- google font link -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Poppins:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Boxicons CSS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- preload images -->
+
+    <link rel="preload" as="image" href="{% static 'images/hero-bg.svg' %}">
+    <link rel="preload" as="image" href="{% static 'images/hero-banner-1.jpg' %}">
+    <link rel="preload" as="image" href="{% static 'images/hero-banner-2.jpg' %}">
+    <link rel="preload" as="image" href="{% static 'images/hero-shape-1.svg' %}">
+    <link rel="preload" as="image" href="{% static 'images/hero-shape-2.png' %}">
+
+</head>
+<body>
+    <!-- Sidebar navigation menu -->
+  <nav class="sidebar close">
+    <!-- Sidebar header containing logo and toggle button -->
+    <header>
+      <div class="image-text">
+        <span class="image">
+          <img src="{% static 'images/icon.png' %}" alt="Logo">
+        </span>
+        <div class="text logo-text">
+          <span class="name"><a href="{% url 'index' %}">EyeConverse</a></span>
+        </div>
+      </div>
+      <i class='bx bx-chevron-right toggle'></i>
+    </header>
+
+
+    <!-- Sidebar menu items -->
+    <div class="menu-bar">
+      <div class="menu">
+        <!-- Search box within the sidebar -->
+        <li class="search-box" style="height: 2px;">
+          <!-- <i class='bx bx-search icon'></i>
+          <input type="text" placeholder="Search..."> -->
+        </li>
+        <!-- List of menu links -->
+        <ul class="menu-links">
+          <li class="nav-link">
+            <a href="#">
+              <i class='bx bxs-dashboard icon'></i>
+              <span class="text nav-text">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <a href="{% url 'profile' %}">
+              <i class='bx bx-user icon'></i>
+              <span class="text nav-text">Account</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <a href="#">
+              <i class='bx bx-cog icon'></i>
+              <span class="text nav-text">Settings</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <a href="#">
+                <i class='bx bx-chat icon'></i>
+              <span class="text nav-text">Chat</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <a href="#">
+                <i class='bx bx-support icon'></i>
+              <span class="text nav-text">Support</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <!-- <a href="#">
+              <i class='bx bx-wallet icon'></i>
+              <span class="text nav-text">Wallets</span>
+            </a> -->
+          </li>
+        </ul>
+      </div>
+
+      <!-- Bottom content of the sidebar -->
+      <div class="bottom-content">
+        <li>
+          <a href="#">
+            <i class='bx bx-log-out icon'></i>
+            <span class="text nav-text">Logout</span>
+          </a>
+        </li>
+        <!-- Dark mode toggle switch -->
+        <li class="mode">
+          <div class="sun-moon">
+            <i class='bx bx-moon icon moon'></i>
+            <i class='bx bx-sun icon sun'></i>
+          </div>
+          <span class="mode-text text">Dark mode</span>
+          <div class="toggle-switch">
+            <span class="switch"></span>
+          </div>
+        </li>
+      </div>
+    </div>
+  </nav>
+
+
+  <section class="home">
+    <div class="text">My EyeConverse Profile</div>
+    <div class="dashboard-container" style="display: flex; justify-content: space-between; flex-direction: column; align-items: center;">
+        <!-- User info at the top -->
+        <div class="user-info" id="greeting" style="text-align: center; margin-top: 20px;">
+            <span id="greeting-text">Hello {{ user.username }}!</span>
+            <i class='bx bx-bell' style="margin-left: 10px; font-size: 24px;"></i>
+            <i class='bx bx-user-circle' style="margin-left: 10px; font-size: 24px;"></i>
+        </div>
+
+        <main>
+            <div class="profile-container" style="margin-top: 20px;">
+                <!-- Profile Section -->
+                <section class="profile-section" style="margin-right: 20px;">
+                    <div class="profile-card">
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Profile Picture" class="avatar">
+                        <h2>My Profile</h2>
+                        <p>Last Login: {{ user.last_login|date:"d/m/y" }}</p>
+                        <p>Windows 11 Pro, Liverpool</p>
+                        
+                        <form>
+                            <input type="text" value="{{ user_profile.first_name }} {{ user_profile.last_name }}" placeholder="Name" disabled>
+                            <input type="text" value="+44 772345678" placeholder="Phone Number">
+                            <input type="email" value="{{ user.email }}" placeholder="Email">
+                            <button type="submit" class="btn has-before">Save</button>
+                        </form>
+                    </div>
+                </section>
+    
+                <!-- Language Section -->
+                <section class="language-section" style="margin-right: 20px;">
+                    <div class="settings-card">
+                        <h2>Language</h2>
+                        <select id="language-selector">
+                            <option value="english">English (British)</option>
+                            <option value="french">French</option>
+                            <option value="mandarin">Mandarin</option>
+                            <option value="hindi">Hindi</option>
+                        </select>
+                    </div>
+                </section>
+    
+                <!-- Voice Customization Section -->
+                <section class="voice-section">
+                    <div class="settings-card">
+                        <h2>Voice Customisation</h2>
+                        <select>
+                            <option>ABC</option>
+                            <option>XYZ</option>
+                            <option>DEF</option>
+                        </select>
+    
+                        <label for="volume">Output Volume</label>
+                        <input type="range" id="volume" name="volume" min="0" max="100">
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</section>
+
+
+
+<style>
+body {
+    background-color: #f4f6f8;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #ffffff;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.header-container h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-info i {
+    margin-left: 20px;
+    font-size: 24px;
+}
+
+.profile-container {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    padding: 20px;
+}
+
+/* Profile Card */
+.profile-card {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+}
+
+.profile-card img.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+}
+
+.profile-card h2 {
+    margin-bottom: 10px;
+}
+
+.profile-card p {
+    color: gray;
+    margin: 5px 0;
+}
+
+.profile-card form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-card form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.profile-card form button {
+    background-color: hsl(185, 100%, 23%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.profile-card form button:hover {
+    background-color: hsl(185, 100%, 23%);;
+}
+
+/* Settings Cards (Language & Voice) */
+.settings-card {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+}
+
+.settings-card h2 {
+    margin-bottom: 20px;
+}
+
+.settings-card select,
+.settings-card input[type="range"] {
+    width: 80%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.settings-card input[type="range"] {
+    margin-top: 10px;
+}
+
+</style>
+
+  <script>
+    const body = document.querySelector('body'),
+    sidebar = body.querySelector('nav'),
+    toggle = body.querySelector(".toggle"),
+    searchBtn = body.querySelector(".search-box"),
+    modeSwitch = body.querySelector(".toggle-switch"),
+    modeText = body.querySelector(".mode-text");
+
+    // Toggle sidebar visibility
+    toggle.addEventListener("click", () => {
+        sidebar.classList.toggle("close");
+    });
+
+    // Show sidebar when search button is clicked
+    searchBtn.addEventListener("click", () => {
+        sidebar.classList.remove("close");
+    });
+
+    // Toggle dark mode and update mode text
+    modeSwitch.addEventListener("click", () => {
+        body.classList.toggle("dark");
+
+        // Update mode text based on the current mode
+        if (body.classList.contains("dark")) {
+            modeText.innerText = "Light mode";
+        } else {
+            modeText.innerText = "Dark mode";
+        }
+    });
+
+    document.getElementById('language-selector').addEventListener('change', function() {
+    const language = this.value;
+    const userName = "{{ user.username }}"; // Use the username dynamically here
+    let greeting = '';
+
+    switch (language) {
+        case 'english':
+            greeting = `Hello ${userName}!`;
+            break;
+        case 'french':
+            greeting = `Bonjour ${userName}!`;
+            break;
+        case 'mandarin':
+            greeting = `你好 ${userName}!`; // Nǐ hǎo
+            break;
+        case 'hindi':
+            greeting = `नमस्ते ${userName}!`; // Namaste
+            break;
+        default:
+            greeting = `Hello ${userName}!`;
+    }
+
+    document.getElementById('greeting-text').textContent = greeting;
+});
+
+
+
+</script>
+
+
+  <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
+
+

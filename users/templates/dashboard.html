@@ -1,0 +1,363 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EyeConverse</title>
+
+    <link rel="shortcut icon" href="{% static 'images/icon.png' %}" type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/keyboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    
+    <!-- google font link -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Poppins:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Boxicons CSS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- preload images -->
+
+    <link rel="preload" as="image" href="{% static 'images/hero-bg.svg' %}">
+    <link rel="preload" as="image" href="{% static 'images/hero-banner-1.jpg' %}">
+    <link rel="preload" as="image" href="{% static 'images/hero-banner-2.jpg' %}">
+    <link rel="preload" as="image" href="{% static 'images/hero-shape-1.svg' %}">
+    <link rel="preload" as="image" href="{% static 'images/hero-shape-2.png' %}">
+
+</head>
+<body>
+    <!-- Sidebar navigation menu -->
+  <nav class="sidebar close">
+    <!-- Sidebar header containing logo and toggle button -->
+    <header>
+      <div class="image-text">
+        <span class="image">
+          <img src="{% static 'images/icon.png' %}" alt="Logo">
+        </span>
+        <div class="text logo-text">
+          <span class="name"><a href="{% url 'index' %}">EyeConverse</a></span>
+        </div>
+      </div>
+      <i class='bx bx-chevron-right toggle'></i>
+    </header>
+
+
+    <!-- Sidebar menu items -->
+    <div class="menu-bar">
+      <div class="menu">
+        <!-- Search box within the sidebar -->
+        <li class="search-box" style="height: 2px;">
+          <!-- <i class='bx bx-search icon'></i>
+          <input type="text" placeholder="Search..."> -->
+        </li>
+        <!-- List of menu links -->
+        <ul class="menu-links">
+          <li class="nav-link">
+            <a href="#">
+              <i class='bx bxs-dashboard icon'></i>
+              <span class="text nav-text">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <a href="{% url 'profile' %}">
+              <i class='bx bx-user icon'></i>
+              <span class="text nav-text">Account</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <a href="#">
+              <i class='bx bx-cog icon'></i>
+              <span class="text nav-text">Settings</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <a href="#">
+                <i class='bx bx-chat icon'></i>
+              <span class="text nav-text">Chat</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <a href="#">
+                <i class='bx bx-support icon'></i>
+              <span class="text nav-text">Support</span>
+            </a>
+          </li>
+          <li class="nav-link">
+            <!-- <a href="#">
+              <i class='bx bx-wallet icon'></i>
+              <span class="text nav-text">Wallets</span>
+            </a> -->
+          </li>
+        </ul>
+      </div>
+
+      <!-- Bottom content of the sidebar -->
+      <div class="bottom-content">
+        <li>
+          <a href="#">
+            <i class='bx bx-log-out icon'></i>
+            <span class="text nav-text">Logout</span>
+          </a>
+        </li>
+        <!-- Dark mode toggle switch -->
+        <li class="mode">
+          <div class="sun-moon">
+            <i class='bx bx-moon icon moon'></i>
+            <i class='bx bx-sun icon sun'></i>
+          </div>
+          <span class="mode-text text">Dark mode</span>
+          <div class="toggle-switch">
+            <span class="switch"></span>
+          </div>
+        </li>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content section -->
+  <div id="virtual-cursor" style="position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: rgba(255, 0, 0, 0.7); /* Red cursor */
+  border-radius: 50%;
+  top: 300px;  /* Initial position */
+  left: 300px; /* Initial position */
+  z-index: 1000;
+  pointer-events: none;"></div>
+
+  <section class="home">
+    <div class="text">Welcome to EyeConverse, {{ user.username }}</div>
+    <!-- Add the predefined phrases -->
+  
+    <div class="dashboard-container" style="display: flex; justify-content: space-between;">
+      <!-- Webcam feed section -->
+      <div class="webcam-section" style="margin-left: 50px; margin-top: 50px;">
+          <img src="{% url 'eye_tracking_feed' %}" class="video-stream" alt="Webcam Feed" style="width: 430px; height: 340px;">
+      </div>
+
+      <textarea class="use-keyboard-input" style="position: absolute; top: 130px; right: 30px; width:500px; height: 300px;"></textarea>
+      <!-- Speaker icon button for TTS -->
+    <button id="speakButton" class="icon-button" style="position: absolute; top: 450px; right: 30px;">
+      <i class="material-icons">volume_up</i>
+    </button>
+
+    </div>
+
+    <div class="predefined-phrases">
+      <button class="phrase-btn" onclick="insertPhrase('Hi')">Hi</button>
+      <button class="phrase-btn" onclick="insertPhrase('Good Morning!')">Good Morning!</button>
+      <button class="phrase-btn" onclick="insertPhrase('How are you doing?')">How are you doing?</button>
+      <button class="phrase-btn" onclick="insertPhrase('Hey there!')">Hey there!</button>
+    </div>
+    
+
+
+  </section>
+
+
+  <style>
+    .keyboard__key {
+      transition: background-color 0.2s ease;
+    }
+  
+    /* Predefined phrases styling */
+    .predefined-phrases {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+  
+    .predefined-phrases .phrase-btn {
+      background-color: hsl(185, 100%, 23%);;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+  
+    .predefined-phrases .phrase-btn:hover {
+      background-color: hsl(185, 100%, 23%);;
+    }
+  </style>
+  <script>
+    const body = document.querySelector('body'),
+    sidebar = body.querySelector('nav'),
+    toggle = body.querySelector(".toggle"),
+    searchBtn = body.querySelector(".search-box"),
+    modeSwitch = body.querySelector(".toggle-switch"),
+    modeText = body.querySelector(".mode-text");
+
+    // Toggle sidebar visibility
+    toggle.addEventListener("click", () => {
+        sidebar.classList.toggle("close");
+    });
+
+    // Show sidebar when search button is clicked
+    searchBtn.addEventListener("click", () => {
+        sidebar.classList.remove("close");
+    });
+
+    // Toggle dark mode and update mode text
+    modeSwitch.addEventListener("click", () => {
+        body.classList.toggle("dark");
+
+        // Update mode text based on the current mode
+        if (body.classList.contains("dark")) {
+            modeText.innerText = "Light mode";
+        } else {
+            modeText.innerText = "Dark mode";
+        }
+    });
+
+    // This function moves the virtual cursor based on the coordinates sent by the server (eye-tracking feed)
+    function moveCursor(x, y) {
+        const cursor = document.getElementById('virtual-cursor');
+        cursor.style.left = x + 'px';
+        cursor.style.top = y + 'px';
+    }
+
+    // Function to fetch and update the cursor position
+    function updateCursorPosition() {
+        setInterval(() => {
+            fetch('/users/get_cursor_position/')
+                .then(response => response.json())
+                .then(data => {
+                    moveCursor(data.x, data.y);
+                })
+                .catch(error => {
+                    console.error('Error fetching cursor position:', error);
+                });
+        }, 100);
+    }
+
+    // Function to highlight the key based on cursor position
+    function highlightKeyOnHover(cursorX, cursorY) {
+    const keys = document.querySelectorAll(".keyboard__key");
+
+    keys.forEach(key => {
+        // Get the bounding rectangle of each key
+        const rect = key.getBoundingClientRect();
+
+        // Check if the cursor is within the key's bounding box
+        if (cursorX >= rect.left && cursorX <= rect.right && cursorY >= rect.top && cursorY <= rect.bottom) {
+            key.style.backgroundColor = "darkgray";  // Highlight the key
+        } else {
+            key.style.backgroundColor = "";  // Reset the key color when cursor is not over it
+        }
+    });
+}
+
+// This function moves the virtual cursor and also checks for the key hover
+function moveCursor(x, y) {
+    const cursor = document.getElementById('virtual-cursor');
+    cursor.style.left = x + 'px';
+    cursor.style.top = y + 'px';
+
+    // Call the function to highlight the key based on cursor position
+    highlightKeyOnHover(x, y);
+}
+
+// Function to fetch and update the cursor position
+function updateCursorPosition() {
+    setInterval(() => {
+        fetch('/users/get_cursor_position/')
+            .then(response => response.json())
+            .then(data => {
+                moveCursor(data.x, data.y);  // Move cursor and highlight key
+            })
+            .catch(error => {
+                console.error('Error fetching cursor position:', error);
+            });
+    }, 100);
+}
+    // Fetch and highlight the key at regular intervals
+    setInterval(() => {
+        fetch('/users/get_highlighted_key/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.highlighted_key) {
+                    highlightKeyOnHover(data.highlighted_key);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching highlighted key:', error);
+            });
+    }, 100);
+
+    // Run cursor position update when the window loads
+    window.onload = updateCursorPosition;
+
+// Function to handle inserting the clicked key into the textarea
+function insertKeyIntoTextArea(key) {
+    const textarea = document.querySelector(".use-keyboard-input");
+    textarea.value += key;  // Append the key to the textarea
+}
+
+// Function to handle inserting the clicked key into the textarea when blink happens
+function handleBlinkAction() {
+    fetch('/users/get_highlighted_key/')  // Get the highlighted key
+        .then(response => response.json())
+        .then(data => {
+            if (data.clicked_key) {  // Check if a key was clicked after the blink
+                console.log("Clicked key received:", data.clicked_key);
+                insertKeyIntoTextArea(data.clicked_key);  // Insert key into the textarea
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching clicked key:', error);
+        });
+}
+
+// Run the blink action handler at regular intervals (when a blink is detected)
+setInterval(() => {
+    handleBlinkAction();  // Check for blink and insert key if detected
+}, 100);
+
+// Function to handle inserting the clicked key into the textarea
+function insertKeyIntoTextArea(key) {
+    const textarea = document.querySelector(".use-keyboard-input");
+    textarea.value += key;  // Append the key to the textarea
+}
+
+// Function to trigger TTS
+function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Text-to-Speech is not supported in this browser.");
+            }
+        }
+
+        // Attach event listener to the TTS button
+        document.getElementById('speakButton').addEventListener('click', function() {
+            const text = document.querySelector(".use-keyboard-input").value;
+            speakText(text);  // Call the TTS function with the text from the text area
+        });
+
+        function insertPhrase(phrase) {
+        const textarea = document.querySelector(".use-keyboard-input");  // Select the textarea
+        textarea.value += `${phrase} `;  // Append the selected phrase into the textarea
+}
+
+
+</script>
+
+
+  <script src="{% static 'js/keyboard.js' %}"></script>
+  <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
+
+

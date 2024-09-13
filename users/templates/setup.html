@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Tracking Setup</title>
+    <style>
+        .video-stream {
+            width: 80%;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .confirm-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Eye Tracking Setup</h1>
+<p>Please focus on the target in the center of the screen to begin calibration.</p>
+
+<div class="calibration-target" id="calibration-target" style="position: absolute; width: 20px; height: 20px; background-color: red; border-radius: 50%; top: 50%; left: 50%;"></div>
+
+
+<img src="{% url 'eye_tracking_setup' %}" class="video-stream" alt="Webcam Feed" style="width: 500px;height: 500px;">
+
+<!-- Confirm Eye Tracking Button (displayed after calibration) -->
+<form method="POST" action="{% url 'confirm_eye_tracking' %}" id="confirm-tracking-form" style="display:none;">
+    {% csrf_token %}
+    <button type="submit">Confirm Eye Tracking</button>
+</form>
+<p id="calibration-status">Calibrating... Focus on the red dot.</p>
+<script>
+    let calibrationPoints = [
+        {x: '10%', y: '10%'},  // top-left
+        {x: '90%', y: '10%'},  // top-right
+        {x: '10%', y: '90%'},  // bottom-left
+        {x: '90%', y: '90%'},  // bottom-right
+        {x: '50%', y: '50%'},  // center
+    ];
+    
+    let currentIndex = 0;
+    const targetElement = document.getElementById('calibration-target');
+    
+    function moveTargetToNextPosition() {
+        if (currentIndex < calibrationPoints.length) {
+            const point = calibrationPoints[currentIndex];
+            targetElement.style.left = point.x;
+            targetElement.style.top = point.y;
+            document.getElementById('calibration-status').innerText = `Calibrating point ${currentIndex + 1} of ${calibrationPoints.length}`;
+            currentIndex++;
+        } else {
+            // Calibration finished
+            targetElement.style.display = 'none';
+            document.getElementById('calibration-status').innerText = "Calibration complete!";
+            document.getElementById('confirm-tracking-form').style.display = 'block';  // Show confirm button
+        }
+    }
+
+    // Simulate user focusing on each target for a few seconds before moving to the next one
+    setInterval(moveTargetToNextPosition, 3000);
+</script>
+
+
+</body>
+</html>
+
