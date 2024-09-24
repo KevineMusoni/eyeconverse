@@ -348,7 +348,7 @@ def get_cursor_position(request):
 
 
 def get_highlighted_key(request):
-    global cursor_x, cursor_y  # Ensure you are using the correct cursor position
+    global cursor_x, cursor_y  # Ensure you are using the correct cursor position 
     highlighted_key = highlight_key(cursor_x, cursor_y)
     return JsonResponse({'highlighted_key': highlighted_key})  # Return the dynamically fetched key
 
