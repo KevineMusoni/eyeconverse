@@ -184,17 +184,3 @@ const Keyboard = {
 window.addEventListener("DOMContentLoaded", function () {
     Keyboard.init();
 });
-
-
-
-function highlightKeyOnHover(highlightedKey) {
-    const keys = document.querySelectorAll(".keyboard__key");
-
-    keys.forEach(key => {
-        if (key.textContent.trim().toLowerCase() === highlightedKey.toLowerCase()) {
-            key.style.backgroundColor = "darkgray";  // Highlight with dark gray
-        } else {
-            key.style.backgroundColor = "";  // Reset to default
-        }
-    });
-}

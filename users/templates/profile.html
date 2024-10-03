@@ -61,7 +61,7 @@
         <!-- List of menu links -->
         <ul class="menu-links">
           <li class="nav-link">
-            <a href="#">
+            <a href="{% url 'dashboard' %}">
               <i class='bx bxs-dashboard icon'></i>
               <span class="text nav-text">Dashboard</span>
             </a>
@@ -128,10 +128,24 @@
     <div class="dashboard-container" style="display: flex; justify-content: space-between; flex-direction: column; align-items: center;">
         <!-- User info at the top -->
         <div class="user-info" id="greeting" style="text-align: center; margin-top: 20px;">
-            <span id="greeting-text">Hello {{ user.username }}!</span>
-            <i class='bx bx-bell' style="margin-left: 10px; font-size: 24px;"></i>
-            <i class='bx bx-user-circle' style="margin-left: 10px; font-size: 24px;"></i>
-        </div>
+          <span id="greeting-text">
+              <!-- Display the greeting dynamically based on the user's selected language -->
+              {% if user.userprofile.language == 'english' %}
+                  Hello {{ user.username }}!
+              {% elif user.userprofile.language == 'french' %}
+                  Bonjour {{ user.username }}!
+              {% elif user.userprofile.language == 'mandarin' %}
+                  你好 {{ user.username }}!
+              {% elif user.userprofile.language == 'hindi' %}
+                  नमस्ते {{ user.username }}!
+              {% else %}
+                  Hello {{ user.username }}!
+              {% endif %}
+          </span>
+          <i class='bx bx-bell' style="margin-left: 10px; font-size: 24px;"></i>
+          <i class='bx bx-user-circle' style="margin-left: 10px; font-size: 24px;"></i>
+      </div>
+      
 
         <main>
             <div class="profile-container" style="margin-top: 20px;">
@@ -154,16 +168,21 @@
     
                 <!-- Language Section -->
                 <section class="language-section" style="margin-right: 20px;">
-                    <div class="settings-card">
-                        <h2>Language</h2>
-                        <select id="language-selector">
-                            <option value="english">English (British)</option>
-                            <option value="french">French</option>
-                            <option value="mandarin">Mandarin</option>
-                            <option value="hindi">Hindi</option>
-                        </select>
-                    </div>
+                  <div class="settings-card">
+                      <h2>Language</h2>
+                      <form method="POST" action="{% url 'profile' %}">
+                          {% csrf_token %}
+                          <select id="language-selector" name="language">
+                              <option value="english" {% if user.userprofile.language == 'english' %}selected{% endif %}>English (British)</option>
+                              <option value="french" {% if user.userprofile.language == 'french' %}selected{% endif %}>French</option>
+                              <option value="mandarin" {% if user.userprofile.language == 'mandarin' %}selected{% endif %}>Mandarin</option>
+                              <option value="hindi" {% if user.userprofile.language == 'hindi' %}selected{% endif %}>Hindi</option>
+                          </select>
+                          <button type="submit" class="btn has-before" style="width: 180px;height: 30px; margin-top: 20px; margin-left: 25px;">Save Language</button>
+                      </form>
+                  </div>
                 </section>
+
     
                 <!-- Voice Customization Section -->
                 <section class="voice-section">
@@ -176,7 +195,12 @@
                         </select>
     
                         <label for="volume">Output Volume</label>
-                        <input type="range" id="volume" name="volume" min="0" max="100">
+                        <div style="display: flex; align-items: center;">
+                            <input type="range" id="volume" name="volume" min="0" max="100" value="{{ user.userprofile.tts_volume|floatformat:0 }}">
+                            <button id="saveVolumeBtn" style="background-color: blue; border-radius: 50%; width: 40px; height: 40px; margin-left: 10px; display: flex; justify-content: center; align-items: center; border: none; cursor: pointer;">
+                              <i class="material-icons" style="color: white;">check</i>
+                          </button>                          
+                        </div>
                     </div>
                 </section>
             </div>
@@ -360,6 +384,25 @@ header {
     document.getElementById('greeting-text').textContent = greeting;
 });
 
+document.getElementById('saveVolumeBtn').addEventListener('click', function() {
+    const volumeValue = document.getElementById('volume').value / 100;
+    fetch('{% url "save_volume" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ volume: volumeValue })
+    }).then(response => {
+        if (response.ok) {
+            alert("Volume saved successfully!");
+        } else {
+            alert("Error saving volume.");
+        }
+    }).catch(error => {
+        console.error("Error in saving volume:", error);
+    });
+});
 
 
 </script>

@@ -45,27 +45,69 @@
         {x: '90%', y: '90%'},  // bottom-right
         {x: '50%', y: '50%'},  // center
     ];
-    
+
     let currentIndex = 0;
     const targetElement = document.getElementById('calibration-target');
-    
+    let collectedCalibrationData = [];  // Data from backend
+
     function moveTargetToNextPosition() {
-        if (currentIndex < calibrationPoints.length) {
-            const point = calibrationPoints[currentIndex];
-            targetElement.style.left = point.x;
-            targetElement.style.top = point.y;
-            document.getElementById('calibration-status').innerText = `Calibrating point ${currentIndex + 1} of ${calibrationPoints.length}`;
-            currentIndex++;
-        } else {
-            // Calibration finished
-            targetElement.style.display = 'none';
-            document.getElementById('calibration-status').innerText = "Calibration complete!";
-            document.getElementById('confirm-tracking-form').style.display = 'block';  // Show confirm button
-        }
+    if (currentIndex < calibrationPoints.length) {
+        const point = calibrationPoints[currentIndex];
+        targetElement.style.left = point.x;
+        targetElement.style.top = point.y;
+
+        let dummyCalibrationPoint = {
+            x: point.x,
+            y: point.y,
+            timestamp: Date.now()
+        };
+
+        collectedCalibrationData.push(dummyCalibrationPoint); 
+
+        document.getElementById('calibration-status').innerText = `Calibrating point ${currentIndex + 1} of ${calibrationPoints.length}`;
+        currentIndex++;
+    } else {
+        // Calibration finished
+        targetElement.style.display = 'none';
+        document.getElementById('calibration-status').innerText = "Calibration complete!";
+        document.getElementById('confirm-tracking-form').style.display = 'block';  // Show confirm button
+
+        // Send calibration data to backend
+        fetch("{% url 'save_calibration_data' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ calibrationData: collectedCalibrationData })  // Sending the collected calibration data
+        }).then(response => {
+            if (response.ok) {
+                console.log('Calibration data saved successfully.');
+            } else {
+                console.error('Error saving calibration data.');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+
+    // Simulate the user focusing on each target for a few seconds before moving to the next one
+    setInterval(moveTargetToNextPosition, 3000);
+
+    function fetchCalibrationData() {
+        fetch("{% url 'eye_tracking_setup' %}")
+            .then(response => response.json())
+            .then(data => {
+                collectedCalibrationData = data.calibrationData;  // Store backend data for calibration
+                console.log('Calibration data fetched', collectedCalibrationData);
+            })
+            .catch(error => {
+                console.error('Error fetching calibration data:', error);
+            });
     }
 
-    // Simulate user focusing on each target for a few seconds before moving to the next one
-    setInterval(moveTargetToNextPosition, 3000);
+    window.onload = fetchCalibrationData;  // Fetch data when page loads
 </script>
 
 

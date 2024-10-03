@@ -7,8 +7,11 @@ import random
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     setup_confirmed = models.BooleanField(default=False)
+    calibration_data = models.JSONField(null=True, blank=True)
     verification_code = models.CharField(max_length=6, blank=True, null=True)
-
+    language = models.CharField(max_length=20, default='english')
+    tts_volume = models.FloatField(default=1.0)
+    
     def generate_verification_code(self):
         """Generate a random 6-digit code."""
         self.verification_code = str(random.randint(100000, 999999))

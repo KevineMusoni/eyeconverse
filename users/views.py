@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
+from django.views.decorators.csrf import csrf_exempt
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
@@ -20,6 +21,7 @@ import dlib
 import os
 from django.conf import settings
 import numpy as np
+import json
 
 # Load Dlib's pre-trained facial landmark detector
 detector = dlib.get_frontal_face_detector()
@@ -125,7 +127,7 @@ def login_view(request):
 
 
 
-# Verification Code View
+# Verification Code
 def verify_code(request):
     if request.method == 'POST':
         code = request.POST.get('verification_code')
@@ -189,9 +191,13 @@ def generate_frames():
     screen_width = 1024
     screen_height = 768
 
+    calibration_data = [] 
+
     # Euclidean distance function
     def euclidean_distance(x1, y1, x2, y2):
         return np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+    
+    calibration_data = [] 
 
     while True:
         success, frame = cap.read()
@@ -234,6 +240,16 @@ def generate_frames():
             cursor_x = int((eye_center_x / frame.shape[1]) * screen_width)
             cursor_y = int((eye_center_y / frame.shape[0]) * screen_height)
 
+            calibration_data.append({
+                'frame': {
+                    'pupil_left': (pupil_left_x, pupil_left_y),
+                    'pupil_right': (pupil_right_x, pupil_right_y),
+                    'center': (eye_center_x, eye_center_y),
+                    'cursor_position': (cursor_x, cursor_y)
+                }
+            })
+
+
             # Step 6: Blink detection logic based on EAR (Eye Aspect Ratio) threshold
             left_ear = eye_aspect_ratio(left_eye)
             right_ear = eye_aspect_ratio(right_eye)
@@ -248,12 +264,12 @@ def generate_frames():
                 else:
                     blink_counter = 0
 
-            # If blink detected, log a message (replace this with actual action logic later)
+            # If blink detected, log a message..
             if blink_detected:
-                highlighted_key = highlight_key(cursor_x, cursor_y)  # Get highlighted key
-                if highlighted_key:
-                    print(f"Blink and key detected. Inserting key: {highlighted_key}")
-                    perform_click_action(highlighted_key)  # Insert key into textarea
+                # highlighted_key = highlight_key(cursor_x, cursor_y)  # Get highlighted key
+                # if highlighted_key:
+                #     print(f"Blink and key detected. Inserting key: {highlighted_key}")
+                #     perform_click_action(highlighted_key)  # Insert key into textarea
                 blink_display_counter = blink_display_frames
                 blink_detected = False
 
@@ -261,9 +277,9 @@ def generate_frames():
                 blink_display_counter -= 1
 
             # Highlight the key based on cursor position
-            highlighted_key = highlight_key(cursor_x, cursor_y)
-            if highlighted_key:
-                update_key_style(highlighted_key)
+            # highlighted_key = highlight_key(cursor_x, cursor_y)
+            # if highlighted_key:
+            #     update_key_style(highlighted_key)
 
             # Draw eye landmarks and rectangles around detected faces
             for (x, y) in np.concatenate((left_eye, right_eye)):
@@ -276,7 +292,7 @@ def generate_frames():
             blinking_status = "Yes" if blink_display_counter > 0 else "No"
             cv2.putText(frame, f"Blinking Status: {blinking_status}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
 
-            # Decrease the display counter, so blinking status resets to "No" after a few frames
+            # Decrease the display counter, blinking status resets to "No" after a few frames
             if blink_display_counter > 0:
                 blink_display_counter -= 1
 
@@ -287,36 +303,13 @@ def generate_frames():
         # Yield the frame for streaming
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-        
-# Highlight the key based on cursor position
-def highlight_key(cursor_x, cursor_y):
-    # Define key positions and their bounding boxes
-    keys = {
-        '1': (100, 200, 160, 260),
-        '2': (160, 200, 220, 260),
-        '3': (220, 200, 280, 260),
-        '4': (280, 200, 340, 260),
-        '5': (340, 200, 400, 260),
-        'q': (100, 260, 160, 320),
-        'w': (160, 260, 220, 320),
-        'e': (220, 260, 280, 320),
-        'r': (280, 260, 340, 320),
-        't': (340, 260, 400, 320),
-        # Add other keys with their bounding boxes
-    }
-
-    # Iterate through the keys and check if the cursor is within the key's bounding box
-    for key, (left, top, right, bottom) in keys.items():
-        if left <= cursor_x <= right and top <= cursor_y <= bottom:
-            return key  # Return the key that the cursor is hovering over
     
-    return None  # Return None if no key is being hovered over
 
 
 # Function to simulate the click action when a blink happens on a highlighted key
-def perform_click_action(key):
-    print(f"Performing click action on key: {key}")
-    return JsonResponse({'clicked_key': key})  # Send the clicked key back to the frontend
+def perform_click_action(highlighted_key):
+    print(f"Performing click action on key: {highlighted_key}")
+    return JsonResponse({'clicked_key': highlighted_key})  # Send the clicked key back to the frontend
 
 
 # Update the style of the highlighted key
@@ -343,26 +336,95 @@ def confirm_eye_tracking(request):
     return redirect('setup')
 
 def get_cursor_position(request):
-    global cursor_x, cursor_y
-    return JsonResponse({'x': cursor_x, 'y': cursor_y})
+    global cursor_x, cursor_y, blink_display_counter
+    blinking_status = "Yes" if blink_display_counter > 0 else "No"
+    print(f"Cursor position fetched: ({cursor_x}, {cursor_y}), Blinking Status: {blinking_status}")
+    return JsonResponse({'x': cursor_x, 'y': cursor_y, 'blinkingStatus': blinking_status})
 
 
 def get_highlighted_key(request):
-    global cursor_x, cursor_y  # Ensure you are using the correct cursor position 
-    highlighted_key = highlight_key(cursor_x, cursor_y)
-    return JsonResponse({'highlighted_key': highlighted_key})  # Return the dynamically fetched key
+    global cursor_x, cursor_y
+    # Log the current cursor position
+    print(f"Fetching highlighted key for cursor position: ({cursor_x}, {cursor_y})")
 
+    highlighted_key = None
 
+    highlighted_key = 'a'
+
+    return JsonResponse({'highlighted_key': highlighted_key})
 
 # Profile Page View
 def profile_view(request):
     user_profile = UserProfile.objects.get(user=request.user)
+    
+    if request.method == 'POST':
+        # Get the selected language from the form
+        selected_language = request.POST.get('language')
+        
+        # Save the selected language to the user profile
+        if selected_language:
+            user_profile.language = selected_language
+            user_profile.save()
+
+        messages.success(request, 'Language preference saved!')
+
     context = {
         'user': request.user,
         'user_profile': user_profile,
     }
+    
     return render(request, 'profile.html', context)
 
 
+@csrf_exempt
+def save_volume(request):
+    if request.method == 'POST':
+        try:
+            # Parse the JSON request body to get the volume value
+            data = json.loads(request.body)
+            volume = data.get('volume', 1.0)  # Default to 1.0 if no volume is provided
+
+            # Save volume to user's profile if authenticated
+            if request.user.is_authenticated:
+                user_profile = request.user.userprofile
+                user_profile.tts_volume = volume  # Update volume in user profile
+                user_profile.save()  # Save changes to the database
+                return JsonResponse({'status': 'success'})  # Respond with success
+            else:
+                return JsonResponse({'status': 'error', 'message': 'User not authenticated'}, status=401)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 
+
+@csrf_exempt
+def save_calibration_data(request):
+    if request.method == 'POST':
+        try:
+            # Get the calibration data from the request body
+            data = json.loads(request.body)
+            calibration_data = data.get('calibrationData', [])
+
+            # Log the received calibration data
+            print(f"Received calibration data: {calibration_data}")
+
+            # Check if the user is authenticated
+            if request.user.is_authenticated:
+                user_profile = UserProfile.objects.get(user=request.user)
+
+                # Save the calibration data to the user's profile
+                user_profile.calibration_data = calibration_data
+                user_profile.save()
+
+                # Log the data saved in the database
+                print(f"Calibration data saved for user {request.user.username}: {user_profile.calibration_data}")
+
+                return JsonResponse({'status': 'success', 'message': 'Calibration data saved successfully.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'User not authenticated'}, status=401)
+        except Exception as e:
+            print(f"Error saving calibration data: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)

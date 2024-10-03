@@ -90,12 +90,7 @@
               <span class="text nav-text">Support</span>
             </a>
           </li>
-          <li class="nav-link">
-            <!-- <a href="#">
-              <i class='bx bx-wallet icon'></i>
-              <span class="text nav-text">Wallets</span>
-            </a> -->
-          </li>
+
         </ul>
       </div>
 
@@ -124,14 +119,14 @@
 
   <!-- Main content section -->
   <div id="virtual-cursor" style="position: absolute;
-  width: 20px;
-  height: 20px;
-  background-color: rgba(255, 0, 0, 0.7); /* Red cursor */
-  border-radius: 50%;
-  top: 300px;  /* Initial position */
-  left: 300px; /* Initial position */
-  z-index: 1000;
-  pointer-events: none;"></div>
+    width: 20px;
+    height: 20px;
+    background-color: rgba(255, 0, 0, 0.7); /* Red cursor */
+    border-radius: 50%;
+    top: 300px;  /* Initial position */
+    left: 300px; /* Initial position */
+    z-index: 1000;
+    pointer-events: none;"></div>
 
   <section class="home">
     <div class="text">Welcome to EyeConverse, {{ user.username }}</div>
@@ -145,20 +140,38 @@
 
       <textarea class="use-keyboard-input" style="position: absolute; top: 130px; right: 30px; width:500px; height: 300px;"></textarea>
       <!-- Speaker icon button for TTS -->
-    <button id="speakButton" class="icon-button" style="position: absolute; top: 450px; right: 30px;">
+    <button id="speakButton" class="icon-button" style="position: absolute; top: 420px; left: 490px; color: #004134; font-weight: 600;">
       <i class="material-icons">volume_up</i>
     </button>
 
     </div>
 
+    <!-- td: predictive text model -->
     <div class="predefined-phrases">
-      <button class="phrase-btn" onclick="insertPhrase('Hi')">Hi</button>
-      <button class="phrase-btn" onclick="insertPhrase('Good Morning!')">Good Morning!</button>
-      <button class="phrase-btn" onclick="insertPhrase('How are you doing?')">How are you doing?</button>
-      <button class="phrase-btn" onclick="insertPhrase('Hey there!')">Hey there!</button>
-    </div>
+      {% if user.userprofile.language == 'english' %}
+          <button class="phrase-btn" data-phrase="Hi" onclick="insertPhrase('Hi')">Hi</button>
+          <button class="phrase-btn" data-phrase="Good Morning!" onclick="insertPhrase('Good Morning!')">Good Morning!</button>
+          <button class="phrase-btn" data-phrase="How are you doing?" onclick="insertPhrase('How are you doing?')">How are you doing?</button>
+          <button class="phrase-btn" data-phrase="Hey there!" onclick="insertPhrase('Hey there!')">Hey there!</button>
+      {% elif user.userprofile.language == 'french' %}
+          <button class="phrase-btn" data-phrase="Salut" onclick="insertPhrase('Salut')">Salut</button>
+          <button class="phrase-btn" data-phrase="Bonjour!" onclick="insertPhrase('Bonjour!')">Bonjour!</button>
+          <button class="phrase-btn" data-phrase="Comment ça va?" onclick="insertPhrase('Comment ça va?')">Comment ça va?</button>
+          <button class="phrase-btn" data-phrase="Coucou!" onclick="insertPhrase('Coucou!')">Coucou!</button>
+      {% elif user.userprofile.language == 'mandarin' %}
+          <button class="phrase-btn" data-phrase="你好" onclick="insertPhrase('你好')">你好</button>
+          <button class="phrase-btn" data-phrase="早上好" onclick="insertPhrase('早上好')">早上好</button>
+          <button class="phrase-btn" data-phrase="你怎么样?" onclick="insertPhrase('你怎么样?')">你怎么样?</button>
+          <button class="phrase-btn" data-phrase="嘿!" onclick="insertPhrase('嘿!')">嘿!</button>
+      {% elif user.userprofile.language == 'hindi' %}
+          <button class="phrase-btn" data-phrase="नमस्ते" onclick="insertPhrase('नमस्ते')">नमस्ते</button>
+          <button class="phrase-btn" data-phrase="सुप्रभात" onclick="insertPhrase('सुप्रभात')">सुप्रभात</button>
+          <button class="phrase-btn" data-phrase="आप कैसे हैं?" onclick="insertPhrase('आप कैसे हैं?')">आप कैसे हैं?</button>
+          <button class="phrase-btn" data-phrase="हैलो!" onclick="insertPhrase('हैलो!')">हैलो!</button>
+      {% endif %}
+  </div>
+  
     
-
 
   </section>
 
@@ -166,6 +179,7 @@
   <style>
     .keyboard__key {
       transition: background-color 0.2s ease;
+      z-index: 1001; 
     }
   
     /* Predefined phrases styling */
@@ -220,83 +234,82 @@
         }
     });
 
-    // This function moves the virtual cursor based on the coordinates sent by the server (eye-tracking feed)
-    function moveCursor(x, y) {
-        const cursor = document.getElementById('virtual-cursor');
-        cursor.style.left = x + 'px';
-        cursor.style.top = y + 'px';
-    }
-
-    // Function to fetch and update the cursor position
-    function updateCursorPosition() {
-        setInterval(() => {
-            fetch('/users/get_cursor_position/')
-                .then(response => response.json())
-                .then(data => {
-                    moveCursor(data.x, data.y);
-                })
-                .catch(error => {
-                    console.error('Error fetching cursor position:', error);
-                });
-        }, 100);
-    }
-
-    // Function to highlight the key based on cursor position
-    function highlightKeyOnHover(cursorX, cursorY) {
-    const keys = document.querySelectorAll(".keyboard__key");
-
-    keys.forEach(key => {
-        // Get the bounding rectangle of each key
-        const rect = key.getBoundingClientRect();
-
-        // Check if the cursor is within the key's bounding box
-        if (cursorX >= rect.left && cursorX <= rect.right && cursorY >= rect.top && cursorY <= rect.bottom) {
-            key.style.backgroundColor = "darkgray";  // Highlight the key
-        } else {
-            key.style.backgroundColor = "";  // Reset the key color when cursor is not over it
-        }
-    });
-}
-
-// This function moves the virtual cursor and also checks for the key hover
+// Function to move the virtual cursor
 function moveCursor(x, y) {
     const cursor = document.getElementById('virtual-cursor');
     cursor.style.left = x + 'px';
     cursor.style.top = y + 'px';
 
+    // Log the cursor position for debugging
+    console.log(`Cursor position updated to: (${x}, ${y})`);
+
     // Call the function to highlight the key based on cursor position
     highlightKeyOnHover(x, y);
+
+    // Call handleBlinkAction and pass the current cursor position
+    handleBlinkAction(x, y);  // Pass x and y to the blink handler
 }
 
-// Function to fetch and update the cursor position
+function highlightKeyOnHover(cursorX, cursorY) {
+    const keys = document.querySelectorAll(".keyboard__key");
+    let highlightedKey = null;
+
+    // Highlight keyboard keys
+    keys.forEach(key => {
+        const rect = key.getBoundingClientRect();
+        const keyText = key.textContent.trim();
+
+        if (cursorX >= rect.left && cursorX <= rect.right && cursorY >= rect.top && cursorY <= rect.bottom) {
+            key.style.backgroundColor = "darkgray";
+            highlightedKey = keyText;
+        } else {
+            key.style.backgroundColor = "";
+        }
+    });
+
+    // Check if cursor is over the speak button
+    const speakButton = document.getElementById('speakButton');
+    const speakRect = speakButton.getBoundingClientRect();
+    if (cursorX >= speakRect.left && cursorX <= speakRect.right && cursorY >= speakRect.top && cursorY <= speakRect.bottom) {
+        speakButton.style.backgroundColor = "darkgray";  // Highlight speak button
+        highlightedKey = 'speakButton';  // Identify the speak button
+    } else {
+        speakButton.style.backgroundColor = "";  // Reset highlight
+    }
+
+    // Check if cursor is over a predefined phrase button
+    const phraseButtons = document.querySelectorAll(".phrase-btn");
+    phraseButtons.forEach(button => {
+        const rect = button.getBoundingClientRect();
+        if (cursorX >= rect.left && cursorX <= rect.right && cursorY >= rect.top && cursorY <= rect.bottom) {
+            button.style.backgroundColor = "darkgray";  // Highlight the phrase button
+            highlightedKey = button.getAttribute('data-phrase');  // Set the highlighted key to the phrase text
+        } else {
+            button.style.backgroundColor = "";  // Reset highlight
+        }
+    });
+
+    return highlightedKey;
+}
+
+// Fetch and update the cursor position and blinking status from the backend
 function updateCursorPosition() {
     setInterval(() => {
         fetch('/users/get_cursor_position/')
             .then(response => response.json())
             .then(data => {
+                console.log(`Received cursor position: (${data.x}, ${data.y}), Blinking Status: ${data.blinkingStatus}`); 
                 moveCursor(data.x, data.y);  // Move cursor and highlight key
+                const highlightedKey = highlightKeyOnHover(data.x, data.y);
+                handleBlinkAction(highlightedKey, data.blinkingStatus);  // Pass the highlighted key and blinking status
             })
             .catch(error => {
-                console.error('Error fetching cursor position:', error);
+                console.error('Error fetching cursor position and blinking status:', error);
             });
-    }, 100);
+    }, 200);  // Update every 200ms
 }
-    // Fetch and highlight the key at regular intervals
-    setInterval(() => {
-        fetch('/users/get_highlighted_key/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.highlighted_key) {
-                    highlightKeyOnHover(data.highlighted_key);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching highlighted key:', error);
-            });
-    }, 100);
 
-    // Run cursor position update when the window loads
-    window.onload = updateCursorPosition;
+window.onload = updateCursorPosition;
 
 // Function to handle inserting the clicked key into the textarea
 function insertKeyIntoTextArea(key) {
@@ -304,52 +317,75 @@ function insertKeyIntoTextArea(key) {
     textarea.value += key;  // Append the key to the textarea
 }
 
-// Function to handle inserting the clicked key into the textarea when blink happens
-function handleBlinkAction() {
-    fetch('/users/get_highlighted_key/')  // Get the highlighted key
-        .then(response => response.json())
-        .then(data => {
-            if (data.clicked_key) {  // Check if a key was clicked after the blink
-                console.log("Clicked key received:", data.clicked_key);
-                insertKeyIntoTextArea(data.clicked_key);  // Insert key into the textarea
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching clicked key:', error);
-        });
+let lastBlinkTime = 0;
+const BLINK_DEBOUNCE_DELAY = 500; // Adjust debounce delay in milliseconds (e.g., 500ms)
+
+function handleBlinkAction(highlightedKey, blinkingStatus) {
+    const currentTime = new Date().getTime();
+    
+    // Only allow one action per blink within the debounce period
+    if (blinkingStatus === "Yes" && highlightedKey && (currentTime - lastBlinkTime > BLINK_DEBOUNCE_DELAY)) {
+        lastBlinkTime = currentTime;  // Update the last blink time
+
+        if (highlightedKey === 'speakButton') {
+            const text = document.querySelector(".use-keyboard-input").value;
+            speakText(text);
+            console.log("Blink action triggered TTS");
+        } else {
+            insertKeyIntoTextArea(highlightedKey);  // Insert regular keys or predefined phrases into textarea
+            console.log("Blink action on key or phrase:", highlightedKey);
+        }
+    }
 }
 
-// Run the blink action handler at regular intervals (when a blink is detected)
-setInterval(() => {
-    handleBlinkAction();  // Check for blink and insert key if detected
-}, 100);
 
-// Function to handle inserting the clicked key into the textarea
-function insertKeyIntoTextArea(key) {
-    const textarea = document.querySelector(".use-keyboard-input");
-    textarea.value += key;  // Append the key to the textarea
-}
+// Function to trigger TTS with language support
+const ttsVolume = parseFloat("{{ user.userprofile.tts_volume|default:1.0 }}");
 
-// Function to trigger TTS
 function speakText(text) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert("Text-to-Speech is not supported in this browser.");
-            }
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        utterance.volume = ttsVolume;
+
+        // Dynamically set the language based on the user's profile
+        let userLanguage = "{{ user.userprofile.language }}";  // Fetch language from user profile
+        
+        // Set the language for TTS
+        switch(userLanguage) {
+            case 'english':
+                utterance.lang = 'en-GB';  // English (British)
+                break;
+            case 'french':
+                utterance.lang = 'fr-FR';  // French
+                break;
+            case 'mandarin':
+                utterance.lang = 'zh-CN';  // Mandarin
+                break;
+            case 'hindi':
+                utterance.lang = 'hi-IN';  // Hindi
+                break;
+            default:
+                utterance.lang = 'en-GB';  // Default to English
         }
 
-        // Attach event listener to the TTS button
-        document.getElementById('speakButton').addEventListener('click', function() {
-            const text = document.querySelector(".use-keyboard-input").value;
-            speakText(text);  // Call the TTS function with the text from the text area
-        });
-
-        function insertPhrase(phrase) {
-        const textarea = document.querySelector(".use-keyboard-input");  // Select the textarea
-        textarea.value += `${phrase} `;  // Append the selected phrase into the textarea
+        window.speechSynthesis.speak(utterance);
+    } else {
+        alert("Text-to-Speech is not supported in this browser.");
+    }
 }
+
+// Attach event listener to the TTS button
+document.getElementById('speakButton').addEventListener('click', function() {
+    const text = document.querySelector(".use-keyboard-input").value;
+    speakText(text);  // Call the multilingual TTS function with the text from the textarea
+});
+
+function insertPhrase(phrase) {
+    const textarea = document.querySelector(".use-keyboard-input");  // Select the textarea
+    textarea.value += `${phrase} `;  // Append the selected phrase into the textarea
+}
+
 
 
 </script>
